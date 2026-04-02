@@ -1,0 +1,22 @@
+services:
+  ingestion-openmeteo:
+    extends:
+      file: ../../compose/common/php-app.base.yml
+      service: php-app-base
+    container_name: ingestion-openmeteo
+    volumes:
+      - ../../services/ingestion-openmeteo:/var/www
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: ingestion-openmeteo-db
+      DB_PORT: 5432
+      DB_DATABASE: ingestion_openmeteo_db
+      DB_USERNAME: demo
+      DB_PASSWORD: demo
+
+      WEATHER_DEFAULT_PROVIDER: open-meteo
+      OPEN_METEO_BASE_URL: https://api.open-meteo.com/v1
+      OPEN_METEO_TIMEZONE: auto
+    depends_on:
+      - rabbitmq
+      - ingestion-openmeteo-db

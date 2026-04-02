@@ -1,0 +1,21 @@
+services:
+  php-app-base:
+    build:
+      context: ../../
+      dockerfile: ./.docker/php/Dockerfile
+    user: "${UID}:${GID}"
+    working_dir: /var/www
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost
+      HOME: /tmp
+
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: demo
+      RABBITMQ_PASSWORD: demo
+      RABBITMQ_VHOST: /
+    networks:
+      - weather_net
+    command: ["bash", "-lc", "tail -f /dev/null"]

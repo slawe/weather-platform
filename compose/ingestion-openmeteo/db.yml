@@ -1,0 +1,12 @@
+services:
+  ingestion-openmeteo-db:
+    extends:
+      file: ../../compose/common/postgres-db.base.yml
+      service: postgres-db-base
+    container_name: ingestion-openmeteo-db
+    environment:
+      POSTGRES_DB: ingestion_openmeteo_db
+    ports:
+      - "54321:5432"
+    volumes:
+      - ingestion_openmeteo_db_data:/var/lib/postgresql/data

@@ -1,0 +1,12 @@
+services:
+  ingestion-weatherapi-db:
+    extends:
+      file: ../../compose/common/postgres-db.base.yml
+      service: postgres-db-base
+    container_name: ingestion-weatherapi-db
+    environment:
+      POSTGRES_DB: ingestion_weatherapi_db
+    ports:
+      - "54323:5432"
+    volumes:
+      - ingestion_weatherapi_db_data:/var/lib/postgresql/data

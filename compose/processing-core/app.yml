@@ -1,0 +1,18 @@
+services:
+  processing-core:
+    extends:
+      file: ../../compose/common/php-app.base.yml
+      service: php-app-base
+    container_name: processing-core
+    volumes:
+      - ../../services/processing-core:/var/www
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: processing-core-db
+      DB_PORT: 5432
+      DB_DATABASE: processing_core_db
+      DB_USERNAME: demo
+      DB_PASSWORD: demo
+    depends_on:
+      - rabbitmq
+      - processing-core-db

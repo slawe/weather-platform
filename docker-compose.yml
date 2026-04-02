@@ -1,0 +1,28 @@
+include:
+  - ./compose/infrastructure/rabbitmq.yml
+
+  - ./compose/ingestion-openmeteo/db.yml
+  - ./compose/ingestion-openmeteo/app.yml
+
+  - ./compose/processing-core/db.yml
+  - ./compose/processing-core/app.yml
+
+  - ./compose/ingestion-weatherapi/db.yml
+  - ./compose/ingestion-weatherapi/app.yml
+
+networks:
+  weather_net:
+    name: weather_net
+
+volumes:
+  rabbitmq_data:
+    name: rabbitmq_data
+
+  ingestion_openmeteo_db_data:
+    name: ingestion_openmeteo_db_data
+
+  processing_core_db_data:
+    name: processing_core_db_data
+
+  ingestion_weatherapi_db_data:
+    name: ingestion_weatherapi_db_data
