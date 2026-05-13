@@ -56,11 +56,14 @@ list-ingestion-commands:
 fetch-openmeteo:
 	docker compose exec ingestion-openmeteo php artisan weather:fetch
 
-publish-openmeteo:
+publish-openmeteo: rabbitmq-setup
 	docker compose exec ingestion-openmeteo php artisan outbox:publish
 
 consume-weather:
 	docker compose exec processing-core php artisan weather:consume
+
+rabbitmq-setup:
+	docker compose exec processing-core php artisan rabbitmq:setup
 
 logs-processing:
 	docker compose exec processing-core tail -f storage/logs/laravel.log
@@ -71,6 +74,8 @@ setup-weatherapi:
 run-weatherapi:
 	docker compose exec ingestion-weatherapi go run ./cmd/app
 
-publish-weatherapi:
+publish-weatherapi: rabbitmq-setup
 	docker compose exec ingestion-weatherapi go run ./cmd/publish-outbox
 
+schedule-weatherapi: rabbitmq-setup
+	docker compose exec ingestion-weatherapi go run ./cmd/scheduler

@@ -17,15 +17,16 @@ type Config struct {
 	Database   DatabaseConfig
 	RabbitMQ   RabbitMQConfig
 	WeatherAPI WeatherAPIConfig
+	Scheduler  SchedulerConfig
 }
 
 /*
 AppConfig sadrži osnovna podešavanja same aplikacije.
 */
 type AppConfig struct {
-	Env string
+	Env         string
 	ServiceName string
-    SourceName  string
+	SourceName  string
 }
 
 /*
@@ -68,10 +69,18 @@ type DefaultLocationConfig struct {
 WeatherAPIConfig sadrži podešavanja za WeatherAPI provider.
 */
 type WeatherAPIConfig struct {
-	BaseURL             string
-	APIKey              string
-	DefaultQuery        string
-	DefaultLocations    []DefaultLocationConfig
+	BaseURL          string
+	APIKey           string
+	DefaultQuery     string
+	DefaultLocations []DefaultLocationConfig
+}
+
+/*
+SchedulerConfig sadrži intervale za periodični ingestion i outbox publish.
+*/
+type SchedulerConfig struct {
+	FetchIntervalSeconds         int
+	OutboxPublishIntervalSeconds int
 }
 
 /*
@@ -148,9 +157,9 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		App: AppConfig{
-			Env: getEnv("APP_ENV", "local"),
+			Env:         getEnv("APP_ENV", "local"),
 			ServiceName: getEnv("SERVICE_NAME", "ingestion-weatherapi"),
-            SourceName:  getEnv("SOURCE_NAME", "weatherapi"),
+			SourceName:  getEnv("SOURCE_NAME", "weatherapi"),
 		},
 		Database: DatabaseConfig{
 			Host:     dbHost,
@@ -170,33 +179,37 @@ func Load() (*Config, error) {
 			RoutingKey:   rabbitRoutingKey,
 		},
 		WeatherAPI: WeatherAPIConfig{
-        	BaseURL:      weatherBaseURL,
-        	APIKey:       weatherAPIKey,
-        	DefaultQuery: getEnv("WEATHERAPI_QUERY_DEFAULT", "Belgrade"),
-        	DefaultLocations: []DefaultLocationConfig{
-        		{
-        			ID:        "11111111-1111-1111-1111-111111111111",
-        			Name:      "Belgrade",
-        			Country:   "Serbia",
-        			Latitude:  44.8178,
-        			Longitude: 20.4569,
-        		},
-        		{
-        			ID:        "22222222-2222-2222-2222-222222222222",
-        			Name:      "Novi Sad",
-        			Country:   "Serbia",
-        			Latitude:  45.2671,
-        			Longitude: 19.8335,
-        		},
-        		{
-        			ID:        "33333333-3333-3333-3333-333333333333",
-        			Name:      "Niš",
-        			Country:   "Serbia",
-        			Latitude:  43.3209,
-        			Longitude: 21.8958,
-        		},
-        	},
-        },
+			BaseURL:      weatherBaseURL,
+			APIKey:       weatherAPIKey,
+			DefaultQuery: getEnv("WEATHERAPI_QUERY_DEFAULT", "Belgrade"),
+			DefaultLocations: []DefaultLocationConfig{
+				{
+					ID:        "11111111-1111-1111-1111-111111111111",
+					Name:      "Belgrade",
+					Country:   "Serbia",
+					Latitude:  44.8178,
+					Longitude: 20.4569,
+				},
+				{
+					ID:        "22222222-2222-2222-2222-222222222222",
+					Name:      "Novi Sad",
+					Country:   "Serbia",
+					Latitude:  45.2671,
+					Longitude: 19.8335,
+				},
+				{
+					ID:        "33333333-3333-3333-3333-333333333333",
+					Name:      "Niš",
+					Country:   "Serbia",
+					Latitude:  43.3209,
+					Longitude: 21.8958,
+				},
+			},
+		},
+		Scheduler: SchedulerConfig{
+			FetchIntervalSeconds:         getEnvAsPositiveInt("WEATHER_FETCH_INTERVAL_SECONDS", 60),
+			OutboxPublishIntervalSeconds: getEnvAsPositiveInt("OUTBOX_PUBLISH_INTERVAL_SECONDS", 60),
+		},
 	}
 
 	return cfg, nil
@@ -241,4 +254,21 @@ func getEnvAsInt(key string, fallback int) (int, error) {
 	}
 
 	return parsed, nil
+}
+
+/*
+getEnvAsPositiveInt vraća pozitivnu int vrednost ili fallback.
+*/
+func getEnvAsPositiveInt(key string, fallback int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+
+	return parsed
 }
