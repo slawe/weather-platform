@@ -116,7 +116,7 @@ php artisan migrate:fresh
 
 ## Pokretanje containera iz root projekta
 ```bash
-mkae up
+make up
 ```
 
 ## Instalacija dependencija
@@ -126,7 +126,7 @@ make composer-install
 
 ## Generisanje app key
 ```bash
-mkae keygen
+make keygen
 ```
 
 ## Čišćenje Laravel cache-a

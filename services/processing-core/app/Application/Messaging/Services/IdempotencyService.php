@@ -5,6 +5,7 @@ namespace App\Application\Messaging\Services;
 use App\Application\Messaging\Contracts\IdempotencyRepository;
 use App\Application\Messaging\Contracts\MessageHandler;
 use App\Application\Messaging\DTO\IncomingMessage;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Servis koji obezbeđuje da se isti event ne obradi više puta.
@@ -23,17 +24,21 @@ class IdempotencyService
 
     public function handleOnce(IncomingMessage $message, MessageHandler $handler): bool
     {
-        if ($this->idempotencyRepository->alreadyProcessed($message->eventId())) {
-            return false;
-        }
+        return DB::transaction(function () use ($message, $handler): bool {
+            DB::statement('LOCK TABLE consumed_events IN SHARE ROW EXCLUSIVE MODE');
 
-        $handler->handle($message);
+            if ($this->idempotencyRepository->alreadyProcessed($message->eventId())) {
+                return false;
+            }
 
-        $this->idempotencyRepository->markProcessed(
-            $message->metadata->eventId,
-            $message->metadata->eventName,
-        );
+            $handler->handle($message);
 
-        return true;
+            $this->idempotencyRepository->markProcessed(
+                $message->metadata->eventId,
+                $message->metadata->eventName,
+            );
+
+            return true;
+        });
     }
 }

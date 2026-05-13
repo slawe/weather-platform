@@ -53,10 +53,10 @@ rabbit:
 list-ingestion-commands:
 	docker compose exec ingestion-openmeteo php artisan list | grep -E "weather|outbox"
 
-fetch-weather:
+fetch-openmeteo:
 	docker compose exec ingestion-openmeteo php artisan weather:fetch
 
-publish-outbox:
+publish-openmeteo:
 	docker compose exec ingestion-openmeteo php artisan outbox:publish
 
 consume-weather:
@@ -64,4 +64,13 @@ consume-weather:
 
 logs-processing:
 	docker compose exec processing-core tail -f storage/logs/laravel.log
+
+setup-weatherapi:
+	docker compose exec ingestion-weatherapi go run ./cmd/setup
+
+run-weatherapi:
+	docker compose exec ingestion-weatherapi go run ./cmd/app
+
+publish-weatherapi:
+	docker compose exec ingestion-weatherapi go run ./cmd/publish-outbox
 

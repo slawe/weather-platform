@@ -14,13 +14,13 @@ Cilj projekta je da kroz više nezavisnih servisa, napisanih u različitim progr
 
 Trenutno platforma sadrži sledeće servise:
 
-* `ingestion-openmeteo` — Laravel servis koji povlači vremenske podatke sa Open-Meteo API-ja i publikuje integration evente
-* `processing-core` — Laravel servis koji prima evente, obrađuje ih idempotentno i upisuje read modele
-* `ingestion-weatherapi` — Go servis koji će povlačiti podatke sa WeatherAPI-ja i emitovati isti canonical event contract
+* `ingestion-openmeteo` - Laravel servis koji povlači vremenske podatke sa Open-Meteo API-ja i publikuje integration evente
+* `processing-core` - Laravel servis koji prima evente, obrađuje ih idempotentno i upisuje read modele
+* `ingestion-weatherapi` - Go servis koji će povlačiti podatke sa WeatherAPI-ja i emitovati isti canonical event contract
 
 Planirani sledeći servisi:
 
-* `dashboard-realtime` — NodeJS servis za realtime prikaz podataka i websocket komunikaciju
+* `dashboard-realtime` - NodeJS servis za realtime prikaz podataka i websocket komunikaciju
 * dodatni comparison / analytics servis
 * .NET servis za dalje upoznavanje sa novim ekosistemom i širenje platforme
 

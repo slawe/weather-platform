@@ -18,7 +18,7 @@ return new class extends Migration
             $table->bigIncrements('id');
 
             // Event koji je proizveo ovaj read model zapis.
-            $table->uuid('event_id')->index();
+            $table->uuid('event_id')->unique();
 
             // Identitet lokacije iz producer sistema.
             $table->uuid('location_id')->index();

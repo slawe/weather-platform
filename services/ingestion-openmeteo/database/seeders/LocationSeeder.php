@@ -22,18 +22,19 @@ class LocationSeeder extends Seeder
         $locations = config('weather.default_locations', []);
 
         foreach ($locations as $location) {
-            LocationModel::query()->updateOrCreate(
-                [
-                    'name' => $location['name'],
-                    'country' => $location['country'],
-                ],
-                [
-                    'id' => Uuid::uuid7()->toString(),
-                    'latitude' => $location['latitude'],
-                    'longitude' => $location['longitude'],
-                    'is_active' => true,
-                ]
-            );
+            $locationModel = LocationModel::query()->firstOrNew([
+                'name' => $location['name'],
+                'country' => $location['country'],
+            ]);
+
+            if (!$locationModel->exists) {
+                $locationModel->id = Uuid::uuid7()->toString();
+            }
+
+            $locationModel->latitude = $location['latitude'];
+            $locationModel->longitude = $location['longitude'];
+            $locationModel->is_active = true;
+            $locationModel->save();
         }
     }
 }

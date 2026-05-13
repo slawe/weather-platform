@@ -99,7 +99,7 @@ final class RabbitMqConsumer
         $channel->queue_bind($config['queue'], $config['exchange'], $config['routing_key']);
 
         $retryArguments = new AMQPTable([
-            'x-message-ttl' => $config['retry_ttl_ms'],
+            'x-message-ttl' => (int) $config['retry_ttl_ms'],
             'x-dead-letter-exchange' => $config['exchange'],
             'x-dead-letter-routing-key' => $config['routing_key'],
         ]);
