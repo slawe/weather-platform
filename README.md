@@ -16,7 +16,7 @@ Trenutno platforma sadrži sledeće servise:
 
 * `ingestion-openmeteo` - Laravel servis koji povlači vremenske podatke sa Open-Meteo API-ja i publikuje integration evente
 * `processing-core` - Laravel servis koji prima evente, obrađuje ih idempotentno i upisuje read modele
-* `ingestion-weatherapi` - Go servis koji će povlačiti podatke sa WeatherAPI-ja i emitovati isti canonical event contract
+* `ingestion-weatherapi` - Go servis koji povlači podatke sa WeatherAPI-ja i emituje isti canonical event contract
 
 Planirani sledeći servisi:
 
@@ -90,9 +90,11 @@ Laravel servis zadužen za:
 
 Go servis zadužen za:
 
-* povlačenje vremenskih podataka sa WeatherAPI-ja
+* preuzimanje vremenskih podataka sa WeatherAPI-ja
 * mapiranje podataka u isti canonical contract
+* upis outbox poruka
 * publish događaja u RabbitMQ
+* periodični fetch i outbox publish kroz Go scheduler
 
 ### dashboard-realtime
 
@@ -223,6 +225,23 @@ Podrazumevani kredencijali:
 * korisnik: `demo`
 * lozinka: `demo`
 
+### RabbitMQ topologija
+
+`processing-core` poseduje RabbitMQ queue topologiju i može je deklarisati nezavisno od consumer procesa:
+
+```bash
+make rabbitmq-setup
+```
+
+Ova komanda kreira:
+
+* `weather.events` exchange
+* `weather.processing`
+* `weather.processing.retry`
+* `weather.processing.dlq`
+
+Publish target-i za ingestion servise prvo pokreću ovaj setup, kako poruke ne bi zavisile od toga da li je consumer već startovan.
+
 ---
 
 ## Baze i ownership
@@ -245,7 +264,7 @@ Koristi se za:
 
 ### ingestion-weatherapi baza
 
-Planirana za:
+Koristi se za:
 
 * `locations`
 * `outbox_messages`
@@ -275,13 +294,12 @@ Ovakav pristup omogućava lakše dodavanje novih servisa bez menjanja postojeći
 
 Planirani sledeći koraci razvoja platforme su:
 
-1. završetak Go servisa `ingestion-weatherapi`
-2. dodavanje NodeJS servisa `dashboard-realtime`
-3. dodavanje comparison / analytics servisa
-4. dodavanje zasebnog .NET servisa
-5. proširenje canonical event contract-a po potrebi
-6. dodavanje dodatnih source provider-a
-7. unapređenje observability i monitoring priče
+1. dodavanje NodeJS servisa `dashboard-realtime`
+2. dodavanje comparison / analytics servisa
+3. dodavanje zasebnog .NET servisa
+4. proširenje canonical event contract-a po potrebi
+5. dodavanje dodatnih source provider-a
+6. unapređenje observability i monitoring priče
 
 ---
 
@@ -297,4 +315,3 @@ Ovaj projekat služi kao praktična platforma za:
 * građenje ozbiljnijeg portfolio projekta koji ima realnu arhitektonsku primenu
 
 ---
-
