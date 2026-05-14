@@ -44,6 +44,7 @@ return new class extends Migration
 
             $table->timestamps();
 
+            $table->unique(['location_id', 'source']);
             $table->index(['location_id', 'observed_at']);
             $table->index(['source', 'observed_at']);
         });

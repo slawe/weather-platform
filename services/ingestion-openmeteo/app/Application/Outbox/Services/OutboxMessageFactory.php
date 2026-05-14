@@ -28,6 +28,7 @@ final readonly class OutboxMessageFactory
             eventName: $event->eventName(),
             eventVersion: $event->eventVersion(),
             routingKey: $this->routingKeyResolver->resolve($event->eventName()),
+            deduplicationKey: $this->deduplicationKey($event),
             payload: [
                 'event_id' => $event->eventId(),
                 'event_name' => $event->eventName(),
@@ -46,6 +47,20 @@ final readonly class OutboxMessageFactory
             attempts: 0,
             availableAt: now()->toIso8601String(),
         );
+    }
+
+    /**
+     * Kreira stabilan key za latest-state outbox zapis.
+     */
+    private function deduplicationKey(DomainEvent $event): string
+    {
+        $payload = $event->payload();
+
+        return implode(':', [
+            $event->eventName(),
+            (string) ($payload['location_id'] ?? ''),
+            (string) ($payload['source'] ?? ''),
+        ]);
     }
 
     /**

@@ -73,6 +73,9 @@ func main() {
 	}
 }
 
+/*
+buildFetchAction sklapa application use case za WeatherAPI fetch flow.
+*/
 func buildFetchAction(
 	cfg *config.Config,
 	dbPool *pgxpool.Pool,
@@ -93,6 +96,9 @@ func buildFetchAction(
 	)
 }
 
+/*
+runFetch izvršava jedan ciklus dohvata vremenskih podataka i punjenja outbox-a.
+*/
 func runFetch(ctx context.Context, action *weatheractions.FetchWeatherForLocationsAction) {
 	createdMessages, err := action.Execute(ctx)
 	if err != nil {
@@ -103,6 +109,9 @@ func runFetch(ctx context.Context, action *weatheractions.FetchWeatherForLocatio
 	log.Printf("weather fetch završen. Kreirano outbox poruka: %d", createdMessages)
 }
 
+/*
+runPublish izvršava jedan ciklus publish-a pending outbox poruka.
+*/
 func runPublish(
 	ctx context.Context,
 	outboxRepository *postgres.OutboxRepository,

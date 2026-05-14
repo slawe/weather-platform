@@ -18,6 +18,7 @@ class OutboxMessageModel extends Model
         'event_name',
         'event_version',
         'routing_key',
+        'deduplication_key',
         'payload',
         'headers',
         'status',

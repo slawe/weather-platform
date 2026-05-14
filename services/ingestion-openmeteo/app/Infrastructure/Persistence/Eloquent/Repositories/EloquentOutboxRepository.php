@@ -4,7 +4,6 @@ namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 
 use App\Application\Outbox\Contracts\OutboxRepository;
 use App\Application\Outbox\DTO\OutboxMessageData;
-use App\Infrastructure\Persistence\Eloquent\Models\OutboxMessageModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use JsonException;
@@ -34,7 +33,73 @@ class EloquentOutboxRepository implements OutboxRepository
             $messages
         );
 
-        OutboxMessageModel::query()->insert($rows);
+        foreach ($rows as $row) {
+            DB::statement(
+                <<<'SQL'
+INSERT INTO outbox_messages (
+    event_id,
+    event_name,
+    event_version,
+    routing_key,
+    deduplication_key,
+    payload,
+    headers,
+    status,
+    attempts,
+    available_at,
+    published_at,
+    last_error,
+    created_at,
+    updated_at
+) VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?::jsonb,
+    ?::jsonb,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+)
+ON CONFLICT (deduplication_key) DO UPDATE SET
+    event_id = EXCLUDED.event_id,
+    event_name = EXCLUDED.event_name,
+    event_version = EXCLUDED.event_version,
+    routing_key = EXCLUDED.routing_key,
+    payload = EXCLUDED.payload,
+    headers = EXCLUDED.headers,
+    status = 'pending',
+    attempts = 0,
+    available_at = EXCLUDED.available_at,
+    published_at = NULL,
+    last_error = NULL,
+    updated_at = EXCLUDED.updated_at
+WHERE outbox_messages.payload::jsonb->'payload' IS DISTINCT FROM EXCLUDED.payload::jsonb->'payload'
+SQL,
+                [
+                    $row['event_id'],
+                    $row['event_name'],
+                    $row['event_version'],
+                    $row['routing_key'],
+                    $row['deduplication_key'],
+                    $row['payload'],
+                    $row['headers'],
+                    $row['status'],
+                    $row['attempts'],
+                    $row['available_at'],
+                    $row['published_at'],
+                    $row['last_error'],
+                    $row['created_at'],
+                    $row['updated_at'],
+                ],
+            );
+        }
     }
 
     /**
@@ -124,6 +189,7 @@ class EloquentOutboxRepository implements OutboxRepository
                 'event_name' => $message->eventName,
                 'event_version' => $message->eventVersion,
                 'routing_key' => $message->routingKey,
+                'deduplication_key' => $message->deduplicationKey,
                 'payload' => $this->encodeJson($message->payload),
                 'headers' => $message->headers !== null ? $this->encodeJson($message->headers) : null,
                 'status' => $message->status,

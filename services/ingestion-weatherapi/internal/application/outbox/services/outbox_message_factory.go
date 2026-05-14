@@ -32,10 +32,11 @@ FromDomainEvent prevodi jedan domain event u jednu outbox poruku.
 */
 func (f *OutboxMessageFactory) FromDomainEvent(event sharedEvent.DomainEvent) outboxdto.OutboxMessageData {
 	return outboxdto.OutboxMessageData{
-		EventID:      event.EventID(),
-		EventName:    event.EventName(),
-		EventVersion: event.EventVersion(),
-		RoutingKey:   event.EventName(),
+		EventID:          event.EventID(),
+		EventName:        event.EventName(),
+		EventVersion:     event.EventVersion(),
+		RoutingKey:       event.EventName(),
+		DeduplicationKey: f.deduplicationKey(event),
 		Payload: map[string]any{
 			"event_id":      event.EventID(),
 			"event_name":    event.EventName(),
@@ -56,6 +57,18 @@ func (f *OutboxMessageFactory) FromDomainEvent(event sharedEvent.DomainEvent) ou
 		PublishedAt: nil,
 		LastError:   nil,
 	}
+}
+
+/*
+deduplicationKey kreira stabilan key za latest-state outbox zapis.
+*/
+func (f *OutboxMessageFactory) deduplicationKey(event sharedEvent.DomainEvent) string {
+	payload := event.Payload()
+
+	locationID, _ := payload["location_id"].(string)
+	source, _ := payload["source"].(string)
+
+	return event.EventName() + ":" + locationID + ":" + source
 }
 
 /*

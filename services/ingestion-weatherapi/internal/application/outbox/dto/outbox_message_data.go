@@ -8,16 +8,17 @@ Isti DTO koristimo za:
 - čitanje pending poruka za publish
 */
 type OutboxMessageData struct {
-	ID           int64
-	EventID      string
-	EventName    string
-	EventVersion int
-	RoutingKey   string
-	Payload      map[string]any
-	Headers      map[string]any
-	Status       string
-	Attempts     int
-	AvailableAt  string
-	PublishedAt  *string
-	LastError    *string
+	ID               int64
+	EventID          string
+	EventName        string
+	EventVersion     int
+	RoutingKey       string
+	DeduplicationKey string
+	Payload          map[string]any
+	Headers          map[string]any
+	Status           string
+	Attempts         int
+	AvailableAt      string
+	PublishedAt      *string
+	LastError        *string
 }

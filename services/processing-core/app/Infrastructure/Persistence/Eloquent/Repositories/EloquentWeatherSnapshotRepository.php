@@ -10,23 +10,27 @@ use App\Infrastructure\Persistence\Eloquent\Models\WeatherSnapshotModel;
 class EloquentWeatherSnapshotRepository implements WeatherSnapshotRepository
 {
     /**
-     * Čuva obrađen vremenski snapshot u lokalni read model.
+     * Čuva ili ažurira najnoviji vremenski snapshot u lokalni read model.
      */
     public function store(MessageMetadata $metadata, WeatherSnapshotPayload $payload): void
     {
-        WeatherSnapshotModel::query()->create([
-            'event_id' => $metadata->eventId,
-            'location_id' => $payload->locationId,
-            'city' => $payload->city,
-            'country' => $payload->country,
-            'latitude' => $payload->latitude,
-            'longitude' => $payload->longitude,
-            'temperature_c' => $payload->temperatureC,
-            'wind_speed_kmh' => $payload->windSpeedKmh,
-            'weather_code' => $payload->weatherCode,
-            'observed_at' => $payload->observedAt,
-            'source' => $payload->source,
-            'received_at' => now(),
-        ]);
+        WeatherSnapshotModel::query()->updateOrCreate(
+            [
+                'location_id' => $payload->locationId,
+                'source' => $payload->source,
+            ],
+            [
+                'event_id' => $metadata->eventId,
+                'city' => $payload->city,
+                'country' => $payload->country,
+                'latitude' => $payload->latitude,
+                'longitude' => $payload->longitude,
+                'temperature_c' => $payload->temperatureC,
+                'wind_speed_kmh' => $payload->windSpeedKmh,
+                'weather_code' => $payload->weatherCode,
+                'observed_at' => $payload->observedAt,
+                'received_at' => now(),
+            ],
+        );
     }
 }

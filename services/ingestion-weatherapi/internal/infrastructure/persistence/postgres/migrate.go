@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
     event_name VARCHAR(150) NOT NULL,
     event_version INTEGER NOT NULL,
     routing_key VARCHAR(150) NOT NULL,
+    deduplication_key VARCHAR(255) NOT NULL UNIQUE,
     payload JSONB NOT NULL,
     headers JSONB NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'pending',

@@ -53,6 +53,7 @@ INSERT INTO outbox_messages (
     event_name,
     event_version,
     routing_key,
+    deduplication_key,
     payload,
     headers,
     status,
@@ -69,11 +70,25 @@ INSERT INTO outbox_messages (
     $6,
     $7,
     $8,
-    $9::timestamptz,
-    $10,
-    $11
+    $9,
+    $10::timestamptz,
+    $11,
+    $12
 )
-ON CONFLICT (event_id) DO NOTHING;
+ON CONFLICT (deduplication_key) DO UPDATE SET
+    event_id = EXCLUDED.event_id,
+    event_name = EXCLUDED.event_name,
+    event_version = EXCLUDED.event_version,
+    routing_key = EXCLUDED.routing_key,
+    payload = EXCLUDED.payload,
+    headers = EXCLUDED.headers,
+    status = 'pending',
+    attempts = 0,
+    available_at = EXCLUDED.available_at,
+    published_at = NULL,
+    last_error = NULL,
+    updated_at = NOW()
+WHERE outbox_messages.payload->'payload' IS DISTINCT FROM EXCLUDED.payload->'payload';
 `
 
 	for _, message := range messages {
@@ -94,6 +109,7 @@ ON CONFLICT (event_id) DO NOTHING;
 			message.EventName,
 			message.EventVersion,
 			message.RoutingKey,
+			message.DeduplicationKey,
 			payloadJSON,
 			headersJSON,
 			message.Status,
@@ -135,6 +151,7 @@ SELECT
     event_name,
     event_version,
     routing_key,
+    deduplication_key,
     payload,
     headers,
     status,
@@ -168,6 +185,7 @@ FOR UPDATE SKIP LOCKED;
 			&message.EventName,
 			&message.EventVersion,
 			&message.RoutingKey,
+			&message.DeduplicationKey,
 			&payloadJSON,
 			&headersJSON,
 			&message.Status,

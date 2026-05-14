@@ -26,11 +26,14 @@ return new class extends Migration
             // Routing key kojim se event šalje na broker.
             $table->string('routing_key');
 
+            // Stabilan key za latest-state outbox zapis.
+            $table->string('deduplication_key')->unique();
+
             // Glavni payload poruke u JSON formatu.
-            $table->json('payload');
+            $table->jsonb('payload');
 
             // Dodatni headeri za broker poruku.
-            $table->json('headers')->nullable();
+            $table->jsonb('headers')->nullable();
 
             // Status lifecycle-a outbox poruke: pending, published, failed.
             $table->string('status')->default('pending');
