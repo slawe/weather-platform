@@ -120,27 +120,27 @@ make keygen
 
 ### Čišćenje Laravel cache-a
 ```bash
-make optimize-clear-ingestion
+make optimize-clear-openmeteo
 ```
 
 ### Sveže migracije i seed
 ```bash
-make fresh-seed-ingestion
+make fresh-seed-openmeteo
 ```
 
 ### Lista dostupnih komandi
 ```bash
-make list-ingestion-commands
+make commands-openmeteo
 ```
 
 ### Ručno pokretanje ingestion procesa
 ```bash
-make fetch-weather
+make fetch-openmeteo
 ```
 
 ### Ručno pokretanje outbox publish procesa
 ```bash
-make publish-outbox
+make publish-openmeteo
 ```
 
 ---

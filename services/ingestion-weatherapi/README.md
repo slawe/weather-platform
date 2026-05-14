@@ -123,7 +123,7 @@ make setup-weatherapi
 ### Jednokratni fetch
 
 ```bash
-make run-weatherapi
+make fetch-weatherapi
 ```
 
 ### Publish outbox poruka

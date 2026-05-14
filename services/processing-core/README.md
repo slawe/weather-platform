@@ -141,7 +141,7 @@ make fresh-processing
 
 ## Pokretanje consumer procesa
 ```bash
-make consume-weather
+make consume-processing
 ```
 
 ## Praćenje processing logova
@@ -155,13 +155,13 @@ make logs-processing
 
 ### Kako testirati servis
 ```bash
-make consume-weather
+make consume-processing
 ```
 
 ### Terminal 2 — pošalji poruke iz ingestion servisa
 ```bash
-make fetch-weather
-make publish-outbox
+make fetch-openmeteo
+make publish-openmeteo
 ```
 
 ### Provera rezultata
