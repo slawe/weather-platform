@@ -3,6 +3,7 @@ include make/rabbitmq.mk
 include make/ingestion-openmeteo.mk
 include make/ingestion-weatherapi.mk
 include make/processing-core.mk
+include make/weather-comparison.mk
 include make/aliases.mk
 
 composer-install:
@@ -17,11 +18,13 @@ optimize-clear:
 	$(MAKE) optimize-clear-openmeteo
 	$(MAKE) optimize-clear-processing
 
-migrate-all: migrate-openmeteo migrate-processing
+setup-weather-comparison: install-weather-comparison migrate-weather-comparison
+
+migrate-all: migrate-openmeteo migrate-processing migrate-weather-comparison
 
 seed-all: seed-openmeteo setup-weatherapi
 
-setup: composer-install keygen migrate-all seed-all rabbitmq-setup
+setup: composer-install keygen install-weather-comparison migrate-all seed-all rabbitmq-setup
 
 fetch-all: fetch-openmeteo fetch-weatherapi
 

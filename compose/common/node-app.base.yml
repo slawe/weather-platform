@@ -1,0 +1,24 @@
+services:
+  node-app-base:
+    build:
+      context: ../../
+      dockerfile: ./.docker/node/Dockerfile
+    user: "${UID}:${GID}"
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      APP_ENV: local
+      PORT: 3000
+      HOME: /tmp
+
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: demo
+      RABBITMQ_PASSWORD: demo
+      RABBITMQ_VHOST: /
+
+      RABBITMQ_EXCHANGE: weather.events
+      RABBITMQ_EXCHANGE_TYPE: topic
+    networks:
+      - weather_net
+    command: ["sh", "-lc", "tail -f /dev/null"]

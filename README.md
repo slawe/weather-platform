@@ -17,11 +17,10 @@ Trenutno platforma sadrži sledeće servise:
 * `ingestion-openmeteo` - Laravel servis koji povlači vremenske podatke sa Open-Meteo API-ja i publikuje integration evente
 * `processing-core` - Laravel servis koji prima evente, obrađuje ih idempotentno i upisuje read modele
 * `ingestion-weatherapi` - Go servis koji povlači podatke sa WeatherAPI-ja i emituje isti canonical event contract
+* `weather-comparison` - NestJS / TypeScript servis za poređenje obrađenih vremenskih podataka i realtime isporuku rezultata
 
 Planirani sledeći servisi:
 
-* `dashboard-realtime` - NodeJS servis za realtime prikaz podataka i websocket komunikaciju
-* dodatni comparison / analytics servis
 * .NET servis za dalje upoznavanje sa novim ekosistemom i širenje platforme
 
 ---
@@ -96,13 +95,15 @@ Go servis zadužen za:
 * publish događaja u RabbitMQ
 * periodični fetch i outbox publish kroz Go scheduler
 
-### dashboard-realtime
+### weather-comparison
 
-Planirani NodeJS servis za:
+NestJS / TypeScript servis zadužen za:
 
-* websocket komunikaciju
-* realtime dashboard
-* live prikaz novih podataka i poređenja između source-ova
+* consume obrađenih current-state eventa
+* čuvanje sopstvenog read modela u PostgreSQL bazi
+* poređenje vrednosti između različitih weather source-ova
+* realtime isporuku rezultata preko Socket.IO gateway-a
+* budući dashboard/API sloj za prikaz poređenja
 
 ---
 
@@ -151,7 +152,7 @@ weather-platform/
     ├── ingestion-openmeteo/
     ├── processing-core/
     ├── ingestion-weatherapi/
-    └── dashboard-realtime/         # planirano
+    └── weather-comparison/
 ```
 
 Svaki servis ima sopstveni README, sopstvenu internu arhitekturu i sopstvenu bazu podataka.
@@ -164,7 +165,7 @@ U okviru platforme koriste se ili će se koristiti sledeće tehnologije:
 
 * Laravel / PHP
 * Go
-* NodeJS
+* NodeJS / TypeScript / NestJS
 * .NET
 * PostgreSQL
 * RabbitMQ
@@ -294,12 +295,13 @@ Ovakav pristup omogućava lakše dodavanje novih servisa bez menjanja postojeći
 
 Planirani sledeći koraci razvoja platforme su:
 
-1. dodavanje NodeJS servisa `dashboard-realtime`
-2. dodavanje comparison / analytics servisa
-3. dodavanje zasebnog .NET servisa
-4. proširenje canonical event contract-a po potrebi
-5. dodavanje dodatnih source provider-a
-6. unapređenje observability i monitoring priče
+1. završetak `weather-comparison` RabbitMQ consumer-a i read modela
+2. dodavanje Socket.IO realtime gateway-a
+3. dodavanje frontend/dashboard prikaza poređenja
+4. dodavanje zasebnog .NET servisa
+5. proširenje canonical event contract-a po potrebi
+6. dodavanje dodatnih source provider-a
+7. unapređenje observability i monitoring priče
 
 ---
 

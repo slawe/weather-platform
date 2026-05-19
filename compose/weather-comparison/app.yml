@@ -1,0 +1,22 @@
+services:
+  weather-comparison:
+    extends:
+      file: ../../compose/common/node-app.base.yml
+      service: node-app-base
+    container_name: weather-comparison
+    volumes:
+      - ../../services/weather-comparison:/app
+    environment:
+      DB_HOST: weather-comparison-db
+      DB_PORT: 5432
+      DB_NAME: weather_comparison_db
+      DB_USER: demo
+      DB_PASSWORD: demo
+
+      SERVICE_NAME: weather-comparison
+      RABBITMQ_CONSUME_ROUTING_KEY: weather.snapshot.updated
+    depends_on:
+      - rabbitmq
+      - weather-comparison-db
+    ports:
+      - "3001:3000"
