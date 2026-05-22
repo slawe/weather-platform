@@ -15,13 +15,9 @@ Cilj projekta je da kroz više nezavisnih servisa, napisanih u različitim progr
 Trenutno platforma sadrži sledeće servise:
 
 * `ingestion-openmeteo` - Laravel servis koji povlači vremenske podatke sa Open-Meteo API-ja i publikuje integration evente
-* `processing-core` - Laravel servis koji prima evente, obrađuje ih idempotentno i upisuje read modele
 * `ingestion-weatherapi` - Go servis koji povlači podatke sa WeatherAPI-ja i emituje isti canonical event contract
-* `weather-comparison` - NestJS / TypeScript servis za poređenje obrađenih vremenskih podataka i realtime isporuku rezultata
-
-Planirani sledeći servisi:
-
-* .NET servis za dalje upoznavanje sa novim ekosistemom i širenje platforme
+* `processing-core` - ASP.NET Core servis koji consume-uje evente, čuva current/history podatke i izlaže REST API
+* `weather-comparison` - NestJS / TypeScript presentation servis za poređenje, istorijski prikaz i realtime isporuku rezultata
 
 ---
 
@@ -32,7 +28,7 @@ Platforma je organizovana kao skup nezavisnih servisa, gde svaki servis ima jasn
 Osnovni arhitektonski principi su:
 
 * svaki servis je zaseban deployment unit
-* svaki servis je vlasnik svoje baze
+* backend servisi koji čuvaju stanje vlasnici su svojih baza
 * servisi komuniciraju preko RabbitMQ
 * integration eventi koriste isti canonical contract
 * domen, aplikacioni sloj i infrastruktura su razdvojeni
@@ -48,7 +44,9 @@ Osnovni arhitektonski principi su:
 6. `processing-core` prima poruku
 7. Poruka se deserializuje i routuje do odgovarajućeg handlera
 8. Obrada se izvršava idempotentno
-9. Rezultat se upisuje u read model bazu
+9. Current stanje se upisuje u `weather_snapshots_current`
+10. Značajne promene se upisuju u `weather_snapshots_history`
+11. `weather-comparison` čita REST API i računa poređenje za frontend
 
 ### RabbitMQ uloga
 
@@ -76,13 +74,14 @@ Laravel servis zadužen za:
 
 ### processing-core
 
-Laravel servis zadužen za:
+ASP.NET Core / C# servis zadužen za:
 
 * consume RabbitMQ poruka
-* deserializaciju incoming eventa
-* routing do odgovarajućeg handlera
+* validaciju canonical event envelope-a
 * idempotency proveru
-* upis processed podataka u read model bazu
+* upsert current weather stanja
+* upis kontrolisane istorije značajnih promena
+* REST API za current, history i average podatke
 * retry i DLQ tok
 
 ### ingestion-weatherapi
@@ -99,9 +98,9 @@ Go servis zadužen za:
 
 NestJS / TypeScript servis zadužen za:
 
-* consume obrađenih current-state eventa
-* čuvanje sopstvenog read modela u PostgreSQL bazi
+* pozivanje `processing-core` REST API-ja
 * poređenje vrednosti između različitih weather source-ova
+* prikaz nedeljnih, mesečnih i tromesečnih trendova po lokaciji
 * realtime isporuku rezultata preko Socket.IO gateway-a
 * budući dashboard/API sloj za prikaz poređenja
 
@@ -150,12 +149,12 @@ weather-platform/
 ├── .env
 └── services/
     ├── ingestion-openmeteo/
-    ├── processing-core/
     ├── ingestion-weatherapi/
+    ├── processing-core/
     └── weather-comparison/
 ```
 
-Svaki servis ima sopstveni README, sopstvenu internu arhitekturu i sopstvenu bazu podataka.
+Svaki servis ima sopstveni README i sopstvenu internu arhitekturu. Servisi koji čuvaju stanje imaju sopstvenu bazu.
 
 ---
 
@@ -183,6 +182,8 @@ Cilj nije samo tehnička raznolikost, već i upoznavanje sa različitim pristupi
 make up
 ```
 
+`processing-core` se pokreće kao ASP.NET Core API sa hosted RabbitMQ consumer-om. `weather-comparison` se pokreće kao NestJS development servis i periodično čita `processing-core` REST API.
+
 ### Gašenje svih servisa
 
 ```bash
@@ -201,7 +202,15 @@ make ps
 make logs
 ```
 
-### Instalacija dependencija za postojeće Laravel servise
+### Pokretanje testova
+
+```bash
+make test
+```
+
+Trenutno pokreće testove za `.NET processing-core` i `weather-comparison`.
+
+### Instalacija dependency-ja za Laravel producer
 
 ```bash
 make composer-install
@@ -225,6 +234,14 @@ Podrazumevani kredencijali:
 
 * korisnik: `demo`
 * lozinka: `demo`
+
+### Weather comparison dashboard
+
+Dashboard je dostupan na:
+
+```text
+http://localhost:3001
+```
 
 ### RabbitMQ topologija
 
@@ -261,7 +278,8 @@ Koristi se za:
 Koristi se za:
 
 * `consumed_events`
-* `weather_snapshots`
+* `weather_snapshots_current`
+* `weather_snapshots_history`
 
 ### ingestion-weatherapi baza
 
@@ -269,6 +287,10 @@ Koristi se za:
 
 * `locations`
 * `outbox_messages`
+
+### weather-comparison
+
+U v1 nema sopstvenu bazu. Čita `processing-core` REST API i drži poslednji comparison rezultat u memoriji.
 
 Ovakav pristup zadržava nezavisnost servisa i sprečava prelivanje odgovornosti između bounded context-a.
 
@@ -291,17 +313,43 @@ Ovakav pristup omogućava lakše dodavanje novih servisa bez menjanja postojeći
 
 ---
 
-## Roadmap
+## Trenutno stanje
 
-Planirani sledeći koraci razvoja platforme su:
+Platforma trenutno podrzava kompletan lokalni tok:
 
-1. završetak `weather-comparison` RabbitMQ consumer-a i read modela
-2. dodavanje Socket.IO realtime gateway-a
-3. dodavanje frontend/dashboard prikaza poređenja
-4. dodavanje zasebnog .NET servisa
-5. proširenje canonical event contract-a po potrebi
-6. dodavanje dodatnih source provider-a
-7. unapređenje observability i monitoring priče
+1. `ingestion-openmeteo` fetchuje podatke i upisuje outbox poruke
+2. `ingestion-weatherapi` fetchuje podatke i upisuje outbox poruke
+3. oba producer-a publikuju canonical `weather.snapshot.fetched` evente
+4. `processing-core` consume-uje evente kroz hosted RabbitMQ consumer
+5. `processing-core` idempotentno azurira current stanje i kontrolisanu history tabelu
+6. `processing-core` izlaže REST API za current, history i average podatke
+7. `processing-core` automatski pokreće retention cleanup za zastarele history zapise
+8. `weather-comparison` cita `processing-core` REST API
+9. `weather-comparison` racuna comparison i emituje Socket.IO update
+10. dashboard na `http://localhost:3001` prikazuje trenutno poredjenje i history detail po gradu
+
+## V1 status
+
+V1 lokalni demo tok je zatvoren kada sledeće provere prolaze:
+
+```bash
+make setup
+make test
+make ingest-once
+```
+
+Očekivano current stanje posle oba producer-a je:
+
+```text
+3 lokacije × 2 source-a = 6 redova
+```
+
+Planirani sledeci koraci posle stabilizacije osnovnog toka su:
+
+1. dodavanje dodatnih source provider-a
+2. uvodjenje observability i monitoring priče
+3. prosirenje dashboard prikaza trendovima iz history podataka
+4. priprema production-friendly Docker buildova
 
 ---
 

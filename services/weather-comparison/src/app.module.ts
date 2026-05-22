@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 
-import { HealthModule } from './infrastructure/http/health/health.module';
+import { ConfigModule } from './config/config.module';
+import { ComparisonModule } from './infrastructure/comparison/comparison.module';
+import { HealthController } from './infrastructure/http/health/health.controller';
 
 // Root NestJS modul za pocetno povezivanje buducih application i infrastructure modula.
 @Module({
-  imports: [HealthModule],
+  imports: [ConfigModule, ComparisonModule],
+  controllers: [HealthController],
 })
 export class AppModule {}

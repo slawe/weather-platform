@@ -20,6 +20,7 @@ class LocationSeeder extends Seeder
     public function run(): void
     {
         $locations = config('weather.default_locations', []);
+        $configuredLocationIds = [];
 
         foreach ($locations as $location) {
             $locationModel = LocationModel::query()->firstOrNew([
@@ -27,14 +28,19 @@ class LocationSeeder extends Seeder
                 'country' => $location['country'],
             ]);
 
-            if (!$locationModel->exists) {
-                $locationModel->id = Uuid::uuid7()->toString();
-            }
+            $locationModel->id = $location['id'] ?? ($locationModel->id ?: Uuid::uuid7()->toString());
+            $configuredLocationIds[] = $locationModel->id;
 
             $locationModel->latitude = $location['latitude'];
             $locationModel->longitude = $location['longitude'];
             $locationModel->is_active = true;
             $locationModel->save();
+        }
+
+        if ($configuredLocationIds !== []) {
+            LocationModel::query()
+                ->whereNotIn('id', $configuredLocationIds)
+                ->update(['is_active' => false]);
         }
     }
 }

@@ -10,15 +10,6 @@ services:
       APP_ENV: local
       PORT: 3000
       HOME: /tmp
-
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: demo
-      RABBITMQ_PASSWORD: demo
-      RABBITMQ_VHOST: /
-
-      RABBITMQ_EXCHANGE: weather.events
-      RABBITMQ_EXCHANGE_TYPE: topic
     networks:
       - weather_net
     command: ["sh", "-lc", "tail -f /dev/null"]

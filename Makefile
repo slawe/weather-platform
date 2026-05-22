@@ -8,23 +8,22 @@ include make/aliases.mk
 
 composer-install:
 	$(MAKE) composer-install-openmeteo
-	$(MAKE) composer-install-processing
 
 keygen:
 	$(MAKE) keygen-openmeteo
-	$(MAKE) keygen-processing
 
 optimize-clear:
 	$(MAKE) optimize-clear-openmeteo
-	$(MAKE) optimize-clear-processing
 
-setup-weather-comparison: install-weather-comparison migrate-weather-comparison
+setup-weather-comparison: install-weather-comparison
 
-migrate-all: migrate-openmeteo migrate-processing migrate-weather-comparison
+migrate-all: migrate-openmeteo migrate-processing
 
 seed-all: seed-openmeteo setup-weatherapi
 
-setup: composer-install keygen install-weather-comparison migrate-all seed-all rabbitmq-setup
+setup: composer-install keygen restore-processing install-weather-comparison migrate-all seed-all rabbitmq-setup
+
+test: test-processing test-weather-comparison
 
 fetch-all: fetch-openmeteo fetch-weatherapi
 

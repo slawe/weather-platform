@@ -1,23 +1,27 @@
 bash-processing:
 	docker compose exec processing-core bash
 
-composer-install-processing:
-	docker compose exec processing-core composer install
+restore-processing:
+	docker compose exec processing-core dotnet restore src/Api/Api.csproj
 
-keygen-processing:
-	docker compose exec processing-core php artisan key:generate
+build-processing:
+	docker compose exec processing-core dotnet build src/Api/Api.csproj
+	docker compose exec processing-core dotnet build src/Cli/Cli.csproj
 
-optimize-clear-processing:
-	docker compose exec processing-core php artisan optimize:clear
+test-processing:
+	docker compose exec processing-core dotnet test src/ProcessingCore.Tests/ProcessingCore.Tests.csproj
 
-migrate-processing:
-	docker compose exec processing-core php artisan migrate
-
-fresh-processing:
-	docker compose exec processing-core php artisan migrate:fresh
-
-consume-processing:
-	docker compose exec processing-core php artisan weather:consume
+run-processing:
+	docker compose up -d processing-core
 
 logs-processing:
-	docker compose exec processing-core tail -f storage/logs/laravel.log
+	docker compose logs -f processing-core
+
+migrate-processing:
+	docker compose exec processing-core dotnet run --project src/Cli/Cli.csproj -- migrate
+
+consume-processing:
+	docker compose exec processing-core dotnet run --project src/Cli/Cli.csproj -- consume
+
+cleanup-processing-history:
+	docker compose exec processing-core dotnet run --project src/Cli/Cli.csproj -- cleanup-history

@@ -1,18 +1,24 @@
 services:
   processing-core:
     extends:
-      file: ../../compose/common/php-app.base.yml
-      service: php-app-base
+      file: ../../compose/common/dotnet-app.base.yml
+      service: dotnet-app-base
     container_name: processing-core
     volumes:
-      - ../../services/processing-core:/var/www
+      - ../../services/processing-core:/app
     environment:
-      DB_CONNECTION: pgsql
+      SERVICE_NAME: processing-core
+
       DB_HOST: processing-core-db
       DB_PORT: 5432
-      DB_DATABASE: processing_core_db
-      DB_USERNAME: demo
+      DB_NAME: processing_core_db
+      DB_USER: demo
       DB_PASSWORD: demo
+      WEATHER_HISTORY_RETENTION_DAYS: 90
+      WEATHER_HISTORY_RETENTION_CLEANUP_INTERVAL_HOURS: 24
     depends_on:
       - rabbitmq
       - processing-core-db
+    ports:
+      - "8082:8080"
+    command: ["bash", "-lc", "dotnet run --project src/Api/Api.csproj"]

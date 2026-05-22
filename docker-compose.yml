@@ -10,7 +10,6 @@ include:
   - ./compose/ingestion-weatherapi/db.yml
   - ./compose/ingestion-weatherapi/app.yml
 
-  - ./compose/weather-comparison/db.yml
   - ./compose/weather-comparison/app.yml
 
 networks:
@@ -29,6 +28,3 @@ volumes:
 
   ingestion_weatherapi_db_data:
     name: ingestion_weatherapi_db_data
-
-  weather_comparison_db_data:
-    name: weather_comparison_db_data

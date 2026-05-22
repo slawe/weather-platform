@@ -7,16 +7,10 @@ services:
     volumes:
       - ../../services/weather-comparison:/app
     environment:
-      DB_HOST: weather-comparison-db
-      DB_PORT: 5432
-      DB_NAME: weather_comparison_db
-      DB_USER: demo
-      DB_PASSWORD: demo
-
       SERVICE_NAME: weather-comparison
-      RABBITMQ_CONSUME_ROUTING_KEY: weather.snapshot.updated
+      PROCESSING_CORE_API_BASE_URL: http://processing-core:8080
     depends_on:
-      - rabbitmq
-      - weather-comparison-db
+      - processing-core
     ports:
       - "3001:3000"
+    command: ["sh", "-lc", "npm run start:dev"]

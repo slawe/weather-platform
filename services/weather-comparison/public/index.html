@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weather Comparison</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Weather Platform</p>
+          <h1>Weather Comparison</h1>
+        </div>
+        <div class="status-panel" aria-live="polite">
+          <span class="status-dot" id="connectionDot"></span>
+          <span id="connectionLabel">Connecting</span>
+        </div>
+      </header>
+
+      <section class="summary-grid" aria-label="Current comparison summary">
+        <div class="metric-card">
+          <span class="metric-label">Locations</span>
+          <strong id="locationCount">0</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Sources</span>
+          <strong id="sourceCount">0</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Max temp gap</span>
+          <strong id="maxTemperatureGap">0.0 C</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Updated</span>
+          <strong id="updatedAt">-</strong>
+        </div>
+      </section>
+
+      <section id="overviewView">
+        <section class="comparison-grid" id="comparisonGrid" aria-label="Location comparisons"></section>
+      </section>
+
+      <section class="history-section is-hidden" id="detailView" aria-label="Location history">
+        <div class="section-header">
+          <div>
+            <button class="back-button" type="button" id="backButton">Back</button>
+            <p class="eyebrow">History</p>
+            <h2 id="detailCity">Location Trends</h2>
+          </div>
+        </div>
+
+        <div class="history-grid">
+          <article class="history-card">
+            <div class="history-card-header">
+              <h3>Weekly</h3>
+              <span id="weeklyCount">0 periods</span>
+            </div>
+            <div class="history-list" id="weeklyHistory"></div>
+          </article>
+          <article class="history-card">
+            <div class="history-card-header">
+              <h3>Monthly</h3>
+              <span id="monthlyCount">0 periods</span>
+            </div>
+            <div class="history-list" id="monthlyHistory"></div>
+          </article>
+          <article class="history-card">
+            <div class="history-card-header">
+              <h3>Quarterly</h3>
+              <span id="quarterlyCount">0 periods</span>
+            </div>
+            <div class="history-list" id="quarterlyHistory"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <template id="locationTemplate">
+      <article class="location-card">
+        <div class="location-header">
+          <div>
+            <h2>
+              <button class="city-link" type="button" data-field="city"></button>
+            </h2>
+            <p data-field="country"></p>
+          </div>
+          <span class="source-count" data-field="sourceCount"></span>
+        </div>
+
+        <div class="source-list" data-field="sources"></div>
+
+        <div class="difference-panel" data-field="difference"></div>
+      </article>
+    </template>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

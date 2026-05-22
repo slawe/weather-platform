@@ -1,0 +1,31 @@
+services:
+  dotnet-app-base:
+    build:
+      context: ../../
+      dockerfile: ./.docker/dotnet/Dockerfile
+    user: "${UID}:${GID}"
+    working_dir: /app
+    environment:
+      APP_ENV: local
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      HOME: /tmp
+
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: demo
+      RABBITMQ_PASSWORD: demo
+      RABBITMQ_VHOST: /
+      RABBITMQ_EXCHANGE: weather.events
+      RABBITMQ_EXCHANGE_TYPE: topic
+      RABBITMQ_QUEUE: weather.processing
+      RABBITMQ_RETRY_QUEUE: weather.processing.retry
+      RABBITMQ_DLQ: weather.processing.dlq
+      RABBITMQ_ROUTING_KEY: weather.snapshot.fetched
+      RABBITMQ_RETRY_TTL_MS: 5000
+      RABBITMQ_MAX_RETRIES: 5
+
+      WEATHER_HISTORY_RETENTION_DAYS: 90
+    networks:
+      - weather_net
+    command: ["bash", "-lc", "tail -f /dev/null"]

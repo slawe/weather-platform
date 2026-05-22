@@ -7,14 +7,14 @@ install-weather-comparison:
 build-weather-comparison:
 	docker compose exec weather-comparison npm run build
 
+test-weather-comparison:
+	docker compose exec weather-comparison npm test
+
 dev-weather-comparison:
-	docker compose exec weather-comparison npm run start:dev
+	docker compose up -d weather-comparison
 
 start-weather-comparison:
-	docker compose exec weather-comparison npm run start
+	docker compose up -d weather-comparison
 
-migrate-weather-comparison:
-	docker compose exec weather-comparison npm run migrate
-
-create-migration-weather-comparison:
-	docker compose exec weather-comparison npm run migration:create
+logs-weather-comparison:
+	docker compose logs -f weather-comparison
